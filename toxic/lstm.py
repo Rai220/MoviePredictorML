@@ -48,6 +48,10 @@ for word, i in word_index.items():
 
 inp = Input(shape=(maxlen,))
 
+x_no_emb = Conv1D(200, 5, strides=1, padding='same', dilation_rate=1, activation='relu',
+            use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
+            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
+            kernel_constraint=None, bias_constraint=None)(inp)
 
 x = Embedding(max_features, embed_size, weights=[embedding_matrix])(inp)
 x1 = Bidirectional(LSTM(50, return_sequences=True, dropout=0.1, recurrent_dropout=0.1))(x)
@@ -57,16 +61,24 @@ x2 = Conv1D(200, 5, strides=1, padding='same', dilation_rate=1, activation='relu
               kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
               kernel_constraint=None, bias_constraint=None)(x)
 
-added = Concatenate()([x1, x2])
+x3 = Conv1D(200, 7, strides=1, padding='same', dilation_rate=1, activation='relu',
+            use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
+            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
+            kernel_constraint=None, bias_constraint=None)(x)
+
+added = Concatenate()([x1, x2, x3, x_no_emb])
 
 x = GlobalMaxPool1D()(added)
-x = Dense(50, activation="relu")(x)
+x = Dropout(0.5)(x)
+x = Dense(512, activation="relu")(x)
+x = Dropout(0.5)(x)
+x = Dense(512, activation="relu")(x)
 x = Dropout(0.5)(x)
 x = Dense(6, activation="sigmoid")(x)
 model = Model(inputs=inp, outputs=x)
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-model.fit(X_t, y, batch_size=32, epochs=4) # validation_split=0.1);
+model.fit(X_t, y, batch_size=32, epochs=10) # validation_split=0.1);
 
 y_test = model.predict([X_te], batch_size=1024, verbose=1)
 
