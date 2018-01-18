@@ -2,7 +2,7 @@ import sys, os, re, csv, codecs, numpy as np, pandas as pd
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras.layers import Dense, Input, LSTM, Embedding, Dropout, Activation, Conv1D, Concatenate
+from keras.layers import Dense, Input, LSTM, Embedding, Dropout, Activation, Conv1D, Conv2D, Concatenate
 from keras.layers import Bidirectional, GlobalMaxPool1D
 from keras.models import Model
 from keras import initializers, regularizers, constraints, optimizers, layers
@@ -48,7 +48,7 @@ for word, i in word_index.items():
 
 inp = Input(shape=(maxlen,))
 
-x_no_emb = Conv1D(200, 5, strides=1, padding='same', dilation_rate=1, activation='relu',
+x_no_emb = Conv2D(200, 5, strides=1, padding='same', dilation_rate=1, activation='relu',
             use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
             kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
             kernel_constraint=None, bias_constraint=None)(inp)
