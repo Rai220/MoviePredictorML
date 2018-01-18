@@ -61,12 +61,12 @@ added = Concatenate()([x1, x2])
 
 x = GlobalMaxPool1D()(added)
 x = Dense(50, activation="relu")(x)
-x = Dropout(0.1)(x)
+x = Dropout(0.5)(x)
 x = Dense(6, activation="sigmoid")(x)
 model = Model(inputs=inp, outputs=x)
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-model.fit(X_t, y, batch_size=32, epochs=2) # validation_split=0.1);
+model.fit(X_t, y, batch_size=32, epochs=4) # validation_split=0.1);
 
 y_test = model.predict([X_te], batch_size=1024, verbose=1)
 
