@@ -2,7 +2,7 @@ import sys, os, re, csv, codecs, numpy as np, pandas as pd
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras.layers import Dense, Input, LSTM, Embedding, Dropout, Activation, Conv1D, Conv2D, Concatenate
+from keras.layers import Dense, Input, LSTM, Embedding, Dropout, Activation, Conv1D
 from keras.layers import Bidirectional, GlobalMaxPool1D
 from keras.models import Model
 from keras import initializers, regularizers, constraints, optimizers, layers
@@ -35,7 +35,6 @@ embeddings_index = dict(get_coefs(*o.strip().split()) for o in open(EMBEDDING_FI
 
 all_embs = np.stack(embeddings_index.values())
 emb_mean,emb_std = all_embs.mean(), all_embs.std()
-emb_mean,emb_std
 
 word_index = tokenizer.word_index
 nb_words = min(max_features, len(word_index))
@@ -47,38 +46,16 @@ for word, i in word_index.items():
 
 
 inp = Input(shape=(maxlen,))
-
 x = Embedding(max_features, embed_size, weights=[embedding_matrix])(inp)
-x1 = Bidirectional(LSTM(512, return_sequences=True, dropout=0.1, recurrent_dropout=0.1))(x)
-
-x2 = Conv1D(256, 5, strides=1, padding='same', dilation_rate=1, activation='relu',
-              use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
-              kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
-              kernel_constraint=None, bias_constraint=None)(x)
-
-x3 = Conv1D(128, 7, strides=1, padding='same', dilation_rate=1, activation='relu',
-            use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
-            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
-            kernel_constraint=None, bias_constraint=None)(x)
-
-x4 = Conv1D(512, 3, strides=1, padding='same', dilation_rate=1, activation='relu',
-            use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
-            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
-            kernel_constraint=None, bias_constraint=None)(x)
-
-added = Concatenate()([x1, x2, x3])
-
-x = GlobalMaxPool1D()(added)
-x = Dropout(0.5)(x)
-x = Dense(512, activation="relu")(x)
-x = Dropout(0.5)(x)
-x = Dense(512, activation="relu")(x)
-x = Dropout(0.5)(x)
+x = Bidirectional(LSTM(200, return_sequences=True, dropout=0.2, recurrent_dropout=0.2))(x)
+x = GlobalMaxPool1D()(x)
+x = Dense(100, activation="relu")(x)
+x = Dropout(0.2)(x)
 x = Dense(6, activation="sigmoid")(x)
 model = Model(inputs=inp, outputs=x)
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-model.fit(X_t, y, batch_size=32, epochs=10) # validation_split=0.1);
+model.fit(X_t, y, batch_size=64, epochs=4) # validation_split=0.1);
 
 y_test = model.predict([X_te], batch_size=1024, verbose=1)
 
