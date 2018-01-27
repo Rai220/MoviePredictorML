@@ -47,20 +47,31 @@ for word, i in word_index.items():
 
 inp = Input(shape=(maxlen,))
 x = Embedding(max_features, embed_size, weights=[embedding_matrix])(inp)
-x = Bidirectional(LSTM(200, return_sequences=True, dropout=0.2, recurrent_dropout=0.2))(x)
+x = Bidirectional(LSTM(50, return_sequences=True))(x)
 x = GlobalMaxPool1D()(x)
-x = Dense(100, activation="relu")(x)
-x = Dropout(0.2)(x)
+x = Dropout(0.1)(x)
+x = Dense(50, activation="relu")(x)
+x = Dropout(0.1)(x)
 x = Dense(6, activation="sigmoid")(x)
 model = Model(inputs=inp, outputs=x)
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-model.fit(X_t, y, batch_size=64, epochs=4) # validation_split=0.1);
+
+
+model.fit(X_t, y, batch_size=32, epochs=2) # validation_split=0.1);
 
 y_test = model.predict([X_te], batch_size=1024, verbose=1)
 
-if os._exists('submission.csv'):
-    os.remove('submission.csv')
+if os._exists('lstm.csv'):
+    os.remove('lstm.csv')
 sample_submission = pd.read_csv(f'sample_submission.csv')
 sample_submission[list_classes] = y_test
-sample_submission.to_csv('submission.csv', index=False)
+sample_submission.to_csv('lstm.csv', index=False)
+
+y_train = model.predict([X_t], batch_size=1024, verbose=1)
+if os._exists('lstm_train.csv'):
+    os.remove('lstm_train.csv')
+sample_submission = pd.read_csv(f'train.csv')
+sample_submission.drop("comment_text", axis=1, inplace=True)
+sample_submission[list_classes] = y_train
+sample_submission.to_csv('lstm_train.csv', index=False)
